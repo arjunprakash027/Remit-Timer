@@ -8,13 +8,16 @@ def download_single_ticker_forex_data(ticker1: str, ticker2: str) -> pd.DataFram
     """
 
     ticker1, ticker2 = ticker1.upper(), ticker2.upper()
-    print(ticker1,ticker2)
 
-    forex_data = yf.download(f"{ticker1}{ticker2}=X", start='2010-01-02', end='2025-10-01')
+    ticker_full = f"{ticker1}{ticker2}=X"
+    forex_data = yf.download(ticker_full, start='2000-01-02', end='2025-10-01')
     
-    print(forex_data)
+    forex_data.columns = ['_'.join(col) for col in forex_data.columns]
+    
+    return forex_data[[f'Close_{ticker_full}']]
 
 
 if __name__ == "__main__":
 
-    download_single_ticker_forex_data("EUR", "INR")
+    eur_to_inr = download_single_ticker_forex_data("EUR", "INR")
+    print(eur_to_inr)
