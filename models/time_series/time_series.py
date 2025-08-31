@@ -14,17 +14,47 @@ def simple_moving_average(price_movement: pd.DataFrame, price_row: str, periods:
     return price_movement
 
 
-def arima_train_and_pred(log_returns: pd.Series, pred_period: int = 5) -> pd.DataFrame:
+def arima_train_and_pred(log_returns: pd.Series, pred_period: int = 5, summary: bool = False) -> np.float64:
 
     """
     Trains a ARIMA model and uses it for prediction on data for pred_period days
     """
-
+    
     model = ARIMA(log_returns, order=(1,0,1))
     model_fit = model.fit()
-
-    print(model_fit.summary())
+    
+    if summary:
+        print(model_fit.summary())
 
     forecast = model_fit.forecast(steps=pred_period)
     
-    return forecast
+    return forecast.values[0]
+
+def backtest_arima(log_returns: pd.Series) -> pd.DataFrame:
+    
+    """
+    Backtesting ARIMA only
+    """
+
+    results = []
+    actual = []
+    for i in range(3, len(log_returns)):
+        prev_rows = log_returns.iloc[:i]
+        forecast = arima_train_and_pred(log_returns=prev_rows, pred_period=1)
+        results.append(forecast)
+        actual.append(log_returns.iloc[i])
+    
+    return pd.DataFrame (
+        {
+        "original":actual,
+        "predicted":results
+        }
+    )
+
+
+
+
+
+
+
+    
