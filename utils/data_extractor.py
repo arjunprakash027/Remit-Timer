@@ -14,10 +14,12 @@ def download_single_ticker_forex_data(ticker1: str, ticker2: str, difference: bo
     
     forex_data.columns = ['_'.join(col) for col in forex_data.columns]
     
+    forex_data.rename(columns={f'Close_{ticker_full}':f'{ticker1}_{ticker2}'}, inplace=True)
+
     if difference:
-        return forex_data[[f'Close_{ticker_full}']].diff()
+        return forex_data[[f'{ticker1}_{ticker2}']].diff()
     
-    return forex_data[[f'Close_{ticker_full}']]
+    return forex_data[[f'{ticker1}_{ticker2}']]
 
 
 if __name__ == "__main__":
