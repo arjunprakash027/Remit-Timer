@@ -5,6 +5,8 @@ This file contains all the code to create a trainable dataframe and backtesting 
 import pandas as pd
 import numpy as np
 from typing import Callable
+from sklearn.metrics import accuracy_score, f1_score, classification_report
+
 
 class CreateTrainableDf:
 
@@ -44,12 +46,20 @@ class CreateTrainableDf:
         backtest_df = self.df.copy().iloc[-last_n_days:]
         target_col = backtest_df['target'].to_list()
         backtest_df.drop(columns='target',inplace=True)
+        outputs = []
 
-        outputs = backtest_df.apply(algorithm, axis=1).to_list()
+        for day in range(0, last_n_days):
+            return_row = np.array(backtest_df.iloc[day].to_list())
+            output = algorithm(return_row)
+            outputs.append(output)
 
         assert len(target_col) == len(outputs)
 
-        
+        acc_score = accuracy_score(target_col, outputs)
+
+        print("Accuracy Score:", acc_score)
+
+
 
 
 
