@@ -18,9 +18,11 @@ def arima_train_and_pred(log_returns: pd.Series, pred_period: int = 5, summary: 
 
     """
     Trains a ARIMA model and uses it for prediction on data for pred_period days
+
+    1 would mean the exhange value next day is less than what it was today and 0 is the opposite of that
     """
     
-    model = ARIMA(log_returns, order=(1,0,1))
+    model = ARIMA(log_returns, order=(10,0,10))
     model_fit = model.fit()
     
     if summary:
@@ -28,7 +30,9 @@ def arima_train_and_pred(log_returns: pd.Series, pred_period: int = 5, summary: 
 
     forecast = model_fit.forecast(steps=pred_period)
     
-    return forecast.values[0]
+    forecast_value = forecast.values[0]
+    forecast_direction = 1 if forecast_value < 0 else 0
+    return forecast_direction
 
 def backtest_arima(log_returns: pd.Series) -> pd.DataFrame:
     
@@ -36,14 +40,23 @@ def backtest_arima(log_returns: pd.Series) -> pd.DataFrame:
     Backtesting ARIMA only
     """
 
+    #log_returns = log_returns.asfreq('D')
+    #print("Log returns",len(log_returns))
     results = []
     actual = []
-    for i in range(3, len(log_returns)):
+    for i in range(10, len(log_returns) - 1):
         prev_rows = log_returns.iloc[:i]
         forecast = arima_train_and_pred(log_returns=prev_rows, pred_period=1)
         results.append(forecast)
-        actual.append(log_returns.iloc[i])
+        actual.append(1 if log_returns.iloc[i+1] < 0 else 0)
     
+    assert len(results) == len(actual), "Length of result and actual do not match"
+
+    matches = (np.array(results) == np.array(actual))
+    accuracy = matches.mean()
+
+    print(f"Accuracy of direction changes: {accuracy}")
+
     return pd.DataFrame (
         {
         "original":actual,
