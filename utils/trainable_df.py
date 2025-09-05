@@ -59,6 +59,8 @@ class CreateTrainableDf:
 
         print("Accuracy Score:", acc_score)
 
+        return accuracy_score
+
 
 
 
